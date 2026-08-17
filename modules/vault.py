@@ -1,6 +1,5 @@
 import subprocess
 import platform
-import threading
 import flet as ft
 from database import save_data
 
@@ -18,14 +17,28 @@ def copy_to_clipboard(text: str):
 def build_vault(page: ft.Page, app_data: dict):
     passwords = app_data.get("passwords", [])
 
-    service_input = ft.TextField(hint_text="Name / Title...", expand=True, border_color="white")
-    user_input = ft.TextField(hint_text="Username / Email", expand=True, border_color="white")
+    # Warna border dinamis dari tema Flet
+    border_col = ft.Colors.OUTLINE
+
+    service_input = ft.TextField(
+        label="Platform / Website",
+        expand=True,
+        prefix_icon=ft.Icons.SECURITY,
+        border_color=border_col
+    )
+    user_input = ft.TextField(
+        label="Username / Email",
+        expand=True,
+        prefix_icon=ft.Icons.PERSON_OUTLINE,
+        border_color=border_col
+    )
     pass_input = ft.TextField(
-        hint_text="Password",
+        label="Password",
         password=True,
         can_reveal_password=True,
         expand=True,
-        border_color="white"
+        prefix_icon=ft.Icons.LOCK_OUTLINE,
+        border_color=border_col
     )
 
     vault_column = ft.Column(spacing=10, scroll=ft.ScrollMode.AUTO, expand=True)
@@ -35,70 +48,77 @@ def build_vault(page: ft.Page, app_data: dict):
         if not passwords:
             vault_column.controls.append(
                 ft.Container(
-                    content=ft.Text("No passwords saved", color="white54", italic=True),
+                    content=ft.Text("No passwords saved...", italic=True),
                     padding=20
                 )
             )
         else:
             for item in passwords:
-                action_row = ft.Row(spacing=5, alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
-
-                # Fungsi pembuat tombol salin
-                def make_copy_btn(vault_item, row_ref):
+                def make_copy_handler(pass_text):
                     def on_copy(e):
-                        copy_to_clipboard(vault_item["password"])
-
-                        copied_label = ft.Container(
-                            content=ft.Row([
-                                ft.Text("Copied!", color="green400", size=12, weight=ft.FontWeight.BOLD)
-                            ], spacing=3),
-                            padding=8
+                        copy_to_clipboard(pass_text)
+                        page.snack_bar = ft.SnackBar(
+                            content=ft.Text("Copied!"),
+                            bgcolor="green800",
+                            duration=2000
                         )
-
-                        row_ref.controls[0] = copied_label
+                        page.snack_bar.open = True
                         page.update()
-
-                        def reset():
-                            try:
-                                row_ref.controls[0] = make_copy_btn(vault_item, row_ref)
-                                page.update()
-                            except Exception:
-                                pass  
-
-                        threading.Timer(2.0, reset).start()
-
-                    return ft.IconButton(
-                        icon=ft.Icons.COPY,
-                        icon_color="green400",
-                        tooltip="Copy Password",
-                        on_click=on_copy
-                    )
+                    return on_copy
 
                 def make_delete_handler(vault_item):
                     return lambda e: delete_password(vault_item)
 
+                # Ukuran dan padding tombol disesuaikan agar rapat
+                copy_btn = ft.IconButton(
+                    icon=ft.Icons.COPY,
+                    icon_color="green400",
+                    icon_size=18,
+                    width=28,
+                    height=28,
+                    style=ft.ButtonStyle(padding=0),
+                    tooltip="Copy Password",
+                    on_click=make_copy_handler(item["password"])
+                )
+
                 del_btn = ft.IconButton(
                     icon=ft.Icons.DELETE_OUTLINE,
                     icon_color="red400",
-                    tooltip="Delete",
+                    icon_size=18,
+                    width=28,
+                    height=28,
+                    style=ft.ButtonStyle(padding=0),
+                    tooltip="Remove Password",
                     on_click=make_delete_handler(item)
                 )
 
-                copy_btn = make_copy_btn(item, action_row)
-                action_row.controls = [copy_btn, del_btn]
+                vault_icon = ft.Container(
+                    content=ft.Icon(ft.Icons.SHIELD_OUTLINED, color="green400", size=22),
+                    padding=10,
+                    bgcolor=ft.Colors.PRIMARY_CONTAINER,
+                    border_radius=8
+                )
+
+                details = ft.Column([
+                    ft.Text(item["service"], weight=ft.FontWeight.BOLD, size=15),
+                    ft.Row([
+                        ft.Icon(ft.Icons.PERSON_OUTLINE, size=13),
+                        ft.Text(item["username"], size=12, opacity=0.8)
+                    ], spacing=4),
+                    ft.Row([
+                        ft.Icon(ft.Icons.KEY, size=13),
+                        ft.Text("••••••••", size=12, opacity=0.5)
+                    ], spacing=4)
+                ], expand=True, spacing=3)
 
                 card_content = ft.Row([
-                    ft.Column([
-                        ft.Text(item["service"], weight=ft.FontWeight.BOLD, size=15),
-                        ft.Text(f"👤 {item['username']}", color="white70", size=13),
-                        ft.Text("🔑 ••••••••", color="white54", size=12)
-                    ], expand=True, spacing=2),
-                    action_row
-                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+                    ft.Row([vault_icon, details], expand=True, spacing=12, vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                    ft.Row([copy_btn, del_btn], spacing=4, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER)
 
                 card = ft.Container(
                     content=card_content,
-                    padding=12,
+                    padding=ft.padding.Padding(12, 8, 12, 8),
                     border_radius=8,
                     bgcolor="surfaceVariant"
                 )
@@ -115,7 +135,8 @@ def build_vault(page: ft.Page, app_data: dict):
             "username": user_input.value.strip(),
             "password": pass_input.value.strip()
         }
-        passwords.append(new_item)
+        # Menggunakan insert(0, ...) agar entri baru berada di posisi paling atas
+        passwords.insert(0, new_item)
         app_data["passwords"] = passwords
         save_data(app_data)
 
@@ -130,23 +151,29 @@ def build_vault(page: ft.Page, app_data: dict):
         save_data(app_data)
         render_passwords()
 
-    add_btn = ft.ElevatedButton(
-        "Add",
+    add_btn = ft.FilledButton(
+        "Save Password",
         icon=ft.Icons.ADD,
-        on_click=add_password
+        on_click=add_password,
+        height=48
     )
 
-    form_layout = ft.Column([
-        ft.Row([service_input, user_input]),
-        ft.Row([pass_input, add_btn])
-    ], spacing=10)
+    form_row_1 = ft.Row([service_input, user_input], spacing=10)
+    form_row_2 = ft.Row([pass_input, add_btn], spacing=10, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+
+    form_card = ft.Container(
+        content=ft.Column([form_row_1, form_row_2], spacing=12),
+        padding=16,
+        border_radius=12,
+        bgcolor="surfaceVariant"
+    )
 
     render_passwords()
 
     return ft.Column([
-        ft.Text("Password", size=24, weight=ft.FontWeight.BOLD),
+        ft.Text("Password Vault", size=24, weight=ft.FontWeight.BOLD),
         ft.Divider(height=10, color="transparent"),
-        form_layout,
-        ft.Divider(height=10),
+        form_card,
+        ft.Divider(height=15, color="transparent"),
         vault_column
     ], expand=True)

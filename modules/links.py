@@ -5,9 +5,28 @@ from database import save_data
 def build_links(page: ft.Page, app_data: dict):
     links = app_data.get("links", [])
 
-    title_input = ft.TextField(hint_text="Name / Title...", expand=True, border_color="white")
-    url_input = ft.TextField(hint_text="URL", expand=True, border_color="white")
-    desc_input = ft.TextField(hint_text="Notes...", expand=True, border_color="white")
+    # Menggunakan warna outline dinamis dari Flet Theme
+    border_col = ft.Colors.OUTLINE
+
+    title_input = ft.TextField(
+        label="Title / Name",
+        expand=True,
+        prefix_icon=ft.Icons.TITLE,
+        border_color=border_col
+    )
+    url_input = ft.TextField(
+        label="URL",
+        expand=True,
+        prefix_icon=ft.Icons.LINK,
+        border_color=border_col
+    )
+
+    desc_input = ft.TextField(
+        label="Description",
+        expand=True,
+        prefix_icon=ft.Icons.NOTES,
+        border_color=border_col
+    )
 
     links_column = ft.Column(spacing=10, scroll=ft.ScrollMode.AUTO, expand=True)
 
@@ -16,7 +35,7 @@ def build_links(page: ft.Page, app_data: dict):
         if not links:
             links_column.controls.append(
                 ft.Container(
-                    content=ft.Text("No links saved", color="white54", italic=True),
+                    content=ft.Text("No links saved...", italic=True),
                     padding=20
                 )
             )
@@ -28,32 +47,50 @@ def build_links(page: ft.Page, app_data: dict):
                 def make_delete_handler(link_item):
                     return lambda e: delete_link(link_item)
 
+                # Ukuran dan padding disesuaikan agar rapat dan rapi
                 open_btn = ft.IconButton(
                     icon=ft.Icons.OPEN_IN_NEW,
                     icon_color="blue400",
-                    tooltip="Open Link",
+                    icon_size=18,
+                    width=28,
+                    height=28,
+                    style=ft.ButtonStyle(padding=0),
+                    tooltip="Open Link in Browser",
                     on_click=make_open_handler(item["url"])
                 )
 
                 del_btn = ft.IconButton(
                     icon=ft.Icons.DELETE_OUTLINE,
                     icon_color="red400",
-                    tooltip="Remove",
+                    icon_size=18,
+                    width=28,
+                    height=28,
+                    style=ft.ButtonStyle(padding=0),
+                    tooltip="Remove Link",
                     on_click=make_delete_handler(item)
                 )
 
+                link_icon = ft.Container(
+                    content=ft.Icon(ft.Icons.LANGUAGE, color="blue400", size=22),
+                    padding=10,
+                    bgcolor=ft.Colors.PRIMARY_CONTAINER,
+                    border_radius=8
+                )
+
+                details = ft.Column([
+                    ft.Text(item["title"], weight=ft.FontWeight.BOLD, size=15),
+                    ft.Text(item["url"], color="blue400", size=12, overflow=ft.TextOverflow.ELLIPSIS),
+                    ft.Text(item.get("desc", ""), size=12, opacity=0.7) if item.get("desc") else ft.Container()
+                ], expand=True, spacing=2)
+
                 card_content = ft.Row([
-                    ft.Column([
-                        ft.Text(item["title"], weight=ft.FontWeight.BOLD, size=15,),
-                        ft.Text(item["url"], color="blue300", size=12,),
-                        ft.Text(item.get("desc", ""), color="white54", size=12,) if item.get("desc") else ft.Container()
-                    ], expand=True, spacing=2),
-                    ft.Row([open_btn, del_btn], spacing=0)
-                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+                    ft.Row([link_icon, details], expand=True, spacing=12, vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                    ft.Row([open_btn, del_btn], spacing=4, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER)
 
                 card = ft.Container(
                     content=card_content,
-                    padding=12,
+                    padding=ft.padding.Padding(12, 8, 12, 8),
                     border_radius=8,
                     bgcolor="surfaceVariant"
                 )
@@ -74,7 +111,8 @@ def build_links(page: ft.Page, app_data: dict):
             "url": raw_url,
             "desc": desc_input.value.strip()
         }
-        links.append(new_item)
+        # Menggunakan insert(0, ...) agar link baru berada di paling atas
+        links.insert(0, new_item)
         app_data["links"] = links
         save_data(app_data)
 
@@ -89,23 +127,29 @@ def build_links(page: ft.Page, app_data: dict):
         save_data(app_data)
         render_links()
 
-    add_btn = ft.ElevatedButton(
-        "Save",
+    add_btn = ft.FilledButton(
+        "Save Link",
         icon=ft.Icons.ADD,
-        on_click=add_link
+        on_click=add_link,
+        height=48
     )
 
-    form_layout = ft.Column([
-        ft.Row([title_input, url_input]),
-        ft.Row([desc_input, add_btn])
-    ], spacing=10)
+    form_row_1 = ft.Row([title_input, url_input], spacing=10)
+    form_row_2 = ft.Row([desc_input, add_btn], spacing=10, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+
+    form_card = ft.Container(
+        content=ft.Column([form_row_1, form_row_2], spacing=12),
+        padding=16,
+        border_radius=12,
+        bgcolor="surfaceVariant"
+    )
 
     render_links()
 
     return ft.Column([
-        ft.Text("Link", size=24, weight=ft.FontWeight.BOLD),
+        ft.Text("Link Bookmark", size=24, weight=ft.FontWeight.BOLD),
         ft.Divider(height=10, color="transparent"),
-        form_layout,
-        ft.Divider(height=10),
+        form_card,
+        ft.Divider(height=15, color="transparent"),
         links_column
     ], expand=True)

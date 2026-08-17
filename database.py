@@ -14,7 +14,6 @@ def get_data_path():
         
     app_dir = os.path.join(base_dir, app_name)
     
-    # Buat folder jika belum ada
     if not os.path.exists(app_dir):
         os.makedirs(app_dir)
         
