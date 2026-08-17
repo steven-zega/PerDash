@@ -1,5 +1,21 @@
+# Python & Virtual Environments
 __pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Build & Dist Outputs (PyInstaller & Flet)
 build/
 dist/
-*.json
-.venv/
+*.spec
+
+# Database lokal (jika menyimpan data pengguna di file lokal)
+# db.json
+# *.db
+
+# Visual Studio Code & IDE
+.vscode/
+.idea/
+*.log
