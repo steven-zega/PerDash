@@ -11,9 +11,10 @@ build/
 dist/
 *.spec
 
-# Database lokal (jika menyimpan data pengguna di file lokal)
-# db.json
-# *.db
+# Database & User Data Lokal
+*.json
+*.db
+data.json
 
 # Visual Studio Code & IDE
 .vscode/
