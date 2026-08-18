@@ -2,11 +2,11 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 ; Non-commercial use only
 
-#define MyAppName "Personal Dashboard"
+#define MyAppName "PerDash"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "Steven Credentia Ivanemaga Zega"
 #define MyAppURL "https://www.example.com/"
-#define MyAppExeName "Personal Dashboard.exe"
+#define MyAppExeName "PerDash.exe"
 #define MyAppAssocName MyAppName + " File"
 #define MyAppAssocExt ".myp"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
@@ -14,7 +14,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{8DFCFEB4-8E98-462B-BC5A-98045B98D064}
+AppId={{5D6FE52B-D7E7-45CB-B41E-83568100B069}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -38,7 +38,8 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputBaseFilename=PersonalDashboard_Setup_v1.0.0
+OutputDir=C:\Users\Steven Zega\Pyhton\Output
+OutputBaseFilename=PerDash_Setup_v1.0.0
 SolidCompression=yes
 WizardStyle=modern dynamic
 
