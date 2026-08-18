@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="PerDash.ico" alt="PerDash Logo" width="120" height="120">
+<img src="./PerDash.png" alt="PerDash Logo" width="120" height="120">
 
 # PerDash
 
