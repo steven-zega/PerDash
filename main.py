@@ -8,10 +8,12 @@ from modules.vault import build_vault
 from modules.notes import build_notes  
 
 def main(page: ft.Page):
-    page.title = "Personal Dashboard"
+    page.title = "PerDash"
     page.padding = 0
     page.window.width = 1000
     page.window.height = 650
+
+    page.window.icon = r"C:\Users\Steven Zega\Pyhton\PerDash.ico"
 
     app_data = load_data()
 
