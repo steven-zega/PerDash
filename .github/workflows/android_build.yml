@@ -25,13 +25,15 @@ jobs:
           pip install flet
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
         with:
-          channel: 'stable'
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Build APK
-        run: flet build apk
+      - name: Build APK (Auto Approve)
+        run: |
+          echo "y" | flet build apk
 
       - name: Upload APK Release
         uses: softprops/action-gh-release@v1
