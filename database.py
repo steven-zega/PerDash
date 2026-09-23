@@ -5,17 +5,19 @@ import platform
 def get_data_path():
     app_name = "Personal Dashboard"
     
-    if platform.system() == "Windows":
-        base_dir = os.getenv("APPDATA")
+    if "ANDROID_ARGUMENT" in os.environ or "ANDROID_PRIVATE" in os.environ or "PYTHONHOME" in os.environ:
+        base_dir = os.environ.get("ANDROID_PRIVATE", os.path.expanduser("~"))
+    elif platform.system() == "Windows":
+        base_dir = os.getenv("APPDATA", os.path.expanduser("~"))
     elif platform.system() == "Darwin":  # macOS
         base_dir = os.path.expanduser("~/Library/Application Support")
-    else:  # Linux
+    else:  # Linux Desktop
         base_dir = os.path.expanduser("~/.config")
         
     app_dir = os.path.join(base_dir, app_name)
     
     if not os.path.exists(app_dir):
-        os.makedirs(app_dir)
+        os.makedirs(app_dir, exist_ok=True)
         
     return os.path.join(app_dir, "data.json")
 

@@ -1,0 +1,11 @@
+[tool.flet]
+org = "com.perdash"
+product = "PerDash"
+company = "PerDash"
+copyright = "Copyright (C) 2026"
+
+[tool.flet.app]
+path = "."
+
+[tool.flet.android]
+icon = "PerDash.png"
