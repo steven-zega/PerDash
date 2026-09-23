@@ -17,7 +17,6 @@ def copy_to_clipboard(text: str):
 def build_vault(page: ft.Page, app_data: dict):
     passwords = app_data.get("passwords", [])
 
-    # Warna border dinamis dari tema Flet
     border_col = ft.Colors.OUTLINE
 
     service_input = ft.TextField(
@@ -69,7 +68,6 @@ def build_vault(page: ft.Page, app_data: dict):
                 def make_delete_handler(vault_item):
                     return lambda e: delete_password(vault_item)
 
-                # Ukuran dan padding tombol disesuaikan agar rapat
                 copy_btn = ft.IconButton(
                     icon=ft.Icons.COPY,
                     icon_color="green400",
@@ -135,7 +133,7 @@ def build_vault(page: ft.Page, app_data: dict):
             "username": user_input.value.strip(),
             "password": pass_input.value.strip()
         }
-        # Menggunakan insert(0, ...) agar entri baru berada di posisi paling atas
+        
         passwords.insert(0, new_item)
         app_data["passwords"] = passwords
         save_data(app_data)

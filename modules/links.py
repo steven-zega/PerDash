@@ -5,7 +5,6 @@ from database import save_data
 def build_links(page: ft.Page, app_data: dict):
     links = app_data.get("links", [])
 
-    # Menggunakan warna outline dinamis dari Flet Theme
     border_col = ft.Colors.OUTLINE
 
     title_input = ft.TextField(
@@ -47,7 +46,6 @@ def build_links(page: ft.Page, app_data: dict):
                 def make_delete_handler(link_item):
                     return lambda e: delete_link(link_item)
 
-                # Ukuran dan padding disesuaikan agar rapat dan rapi
                 open_btn = ft.IconButton(
                     icon=ft.Icons.OPEN_IN_NEW,
                     icon_color="blue400",
@@ -111,7 +109,7 @@ def build_links(page: ft.Page, app_data: dict):
             "url": raw_url,
             "desc": desc_input.value.strip()
         }
-        # Menggunakan insert(0, ...) agar link baru berada di paling atas
+        
         links.insert(0, new_item)
         app_data["links"] = links
         save_data(app_data)

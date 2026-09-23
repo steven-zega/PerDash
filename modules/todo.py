@@ -8,7 +8,6 @@ from database import save_data
 def build_todo(page: ft.Page, app_data: dict):
     todos = app_data.get("todos", [])
 
-    # Warna outline dinamis dari Flet Theme
     border_col = ft.Colors.OUTLINE
 
     task_input = ft.TextField(
@@ -20,7 +19,6 @@ def build_todo(page: ft.Page, app_data: dict):
         border_color=border_col
     )
 
-    # --- PICKER HANDLERS (MAIN FORM) ---
     def on_start_date_change(e):
         if start_date_picker.value:
             adjusted = start_date_picker.value + datetime.timedelta(hours=12)
@@ -65,7 +63,6 @@ def build_todo(page: ft.Page, app_data: dict):
             picker.open = True
             page.update()
 
-    # --- FORM INPUT CONTROLS ---
     priority_dropdown = ft.Dropdown(
         label="Priority",
         hint_text="Priority",
@@ -186,7 +183,6 @@ def build_todo(page: ft.Page, app_data: dict):
         page.overlay.append(preview_overlay)
         page.update()
 
-    # --- DIALOG EDIT TASK (RAPI & SIMETRIS) ---
     def open_edit_dialog(todo_item):
         edit_task_input = ft.TextField(
             label="Activity Name",
@@ -207,7 +203,6 @@ def build_todo(page: ft.Page, app_data: dict):
             expand=True
         )
 
-        # Parse Waktu
         time_val = todo_item.get("time", "")
         start_val, end_val = "", ""
         if " - " in time_val:
@@ -218,7 +213,6 @@ def build_todo(page: ft.Page, app_data: dict):
         else:
             start_val = time_val
 
-        # Parse Tanggal
         start_date_val = todo_item.get("start_date") or todo_item.get("date", "")
         end_date_val = todo_item.get("end_date", "")
 
@@ -355,7 +349,6 @@ def build_todo(page: ft.Page, app_data: dict):
             page.update()
             render_todos()
 
-        # Layout Dialog disusun per-baris secara rapi & simetris
         dialog = ft.AlertDialog(
             title=ft.Text("Edit Activity", weight=ft.FontWeight.BOLD),
             content=ft.Container(
@@ -485,7 +478,6 @@ def build_todo(page: ft.Page, app_data: dict):
                     overflow=ft.TextOverflow.ELLIPSIS
                 )
 
-                # Format Tampilan Tanggal (Mulai & Berakhir)
                 start_d = item.get("start_date") or item.get("date", "")
                 end_d = item.get("end_date", "")
 
@@ -576,7 +568,6 @@ def build_todo(page: ft.Page, app_data: dict):
         app_data["todos"] = todos
         save_data(app_data)
 
-        # Reset Form Input
         task_input.value = ""
         start_date_input.value = ""
         end_date_input.value = ""

@@ -1,11 +1,21 @@
 APP_VERSION = "1.0.0"
 
 import flet as ft
+import threading
+import time
 from database import load_data, save_data
+
+# Modul Desktop
 from modules.todo import build_todo
 from modules.links import build_links
 from modules.vault import build_vault
-from modules.notes import build_notes  
+from modules.notes import build_notes
+
+# Modul Mobile
+from modules.mobile.todo_mobile import build_todo_mobile
+from modules.mobile.links_mobile import build_links_mobile
+from modules.mobile.vault_mobile import build_vault_mobile
+from modules.mobile.notes_mobile import build_notes_mobile
 
 def main(page: ft.Page):
     page.title = "PerDash"
@@ -13,7 +23,10 @@ def main(page: ft.Page):
     page.window.width = 1000
     page.window.height = 650
 
-    page.window.icon = r"C:\Users\Steven Zega\Pyhton\PerDash.ico"
+    try:
+        page.window.icon = r"C:\Users\Steven Zega\Pyhton\PerDash.ico"
+    except Exception:
+        pass
 
     app_data = load_data()
 
@@ -37,84 +50,146 @@ def main(page: ft.Page):
 
     theme_btn = ft.IconButton(
         icon=ft.Icons.LIGHT_MODE if page.theme_mode == ft.ThemeMode.DARK else ft.Icons.DARK_MODE,
-        tooltip="Switch to Light Mode" if page.theme_mode == ft.ThemeMode.DARK else "Switch to Dark Mode",
+        tooltip="Switch Mode",
         on_click=toggle_theme
     )
 
-    content_area = ft.Container(
-        content=build_todo(page, app_data),
-        expand=True,
-        padding=25
-    )
+    current_idx = [0]
+    current_is_mobile = [None]
 
-    def on_nav_change(e):
-        selected_idx = e.control.selected_index
-        if selected_idx == 0:
-            content_area.content = build_todo(page, app_data)
-        elif selected_idx == 1:
-            content_area.content = build_links(page, app_data)
-        elif selected_idx == 2:
-            content_area.content = build_vault(page, app_data)
-        elif selected_idx == 3:
-            content_area.content = build_notes(page, app_data)
-        
-        page.update()
+    def get_content(idx, is_mob):
+        if idx == 0:
+            return build_todo_mobile(page, app_data) if is_mob else build_todo(page, app_data)
+        elif idx == 1:
+            return build_links_mobile(page, app_data) if is_mob else build_links(page, app_data)
+        elif idx == 2:
+            return build_vault_mobile(page, app_data) if is_mob else build_vault(page, app_data)
+        elif idx == 3:
+            return build_notes_mobile(page, app_data) if is_mob else build_notes(page, app_data)
+        return build_todo_mobile(page, app_data) if is_mob else build_todo(page, app_data)
+
+    content_area = ft.Container(
+        expand=True,
+        padding=10
+    )
 
     sidebar = ft.NavigationRail(
         selected_index=0,
         label_type=ft.NavigationRailLabelType.ALL,
-        min_width=90,
-        min_extended_width=180,
+        min_width=80,
+        min_extended_width=140,
         group_alignment=-1.0,
         expand=True,
         destinations=[
-            ft.NavigationRailDestination(
-                icon=ft.Icons.CHECK_BOX_OUTLINED,
-                selected_icon=ft.Icons.CHECK_BOX,
-                label="To-Do List",
-            ),
-            ft.NavigationRailDestination(
-                icon=ft.Icons.LINK_OUTLINED,
-                selected_icon=ft.Icons.LINK,
-                label="Link",
-            ),
-            ft.NavigationRailDestination(
-                icon=ft.Icons.LOCK_OUTLINE,
-                selected_icon=ft.Icons.LOCK,
-                label="Password",
-            ),
-            ft.NavigationRailDestination(  
-                icon=ft.Icons.STICKY_NOTE_2_OUTLINED,
-                selected_icon=ft.Icons.STICKY_NOTE_2,
-                label="Notes",
-            ),
+            ft.NavigationRailDestination(icon=ft.Icons.CHECK_BOX_OUTLINED, selected_icon=ft.Icons.CHECK_BOX, label="To-Do"),
+            ft.NavigationRailDestination(icon=ft.Icons.LINK_OUTLINED, selected_icon=ft.Icons.LINK, label="Link"),
+            ft.NavigationRailDestination(icon=ft.Icons.LOCK_OUTLINE, selected_icon=ft.Icons.LOCK, label="Password"),
+            ft.NavigationRailDestination(icon=ft.Icons.STICKY_NOTE_2_OUTLINED, selected_icon=ft.Icons.STICKY_NOTE_2, label="Notes"),
         ],
-        on_change=on_nav_change,
+        on_change=lambda e: on_nav_change(e.control.selected_index),
     )
 
-    left_sidebar = ft.Column(
-        [
-            sidebar,
-            ft.Container(
-                content=theme_btn,
-                padding=ft.padding.Padding(0, 0, 0, 10),
-                alignment=ft.Alignment(0, 1)
-            )
-        ],
-        width=90,
-        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+    left_sidebar = ft.Container(
+        content=ft.Column(
+            [
+                sidebar,
+                ft.Container(
+                    content=theme_btn,
+                    padding=ft.Padding(0, 0, 0, 10),
+                    alignment=ft.Alignment(0, 1)
+                )
+            ],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        ),
+        width=85,  # Sidebar diperlebar
+        padding=ft.Padding(0, 15, 0, 0)
     )
 
-    layout = ft.Row(
-        [
-            left_sidebar,
-            ft.VerticalDivider(width=1),
-            content_area,
+    bottom_nav = ft.NavigationBar(
+        selected_index=0,
+        destinations=[
+            ft.NavigationBarDestination(icon=ft.Icons.CHECK_BOX_OUTLINED, selected_icon=ft.Icons.CHECK_BOX, label="To-Do"),
+            ft.NavigationBarDestination(icon=ft.Icons.LINK_OUTLINED, selected_icon=ft.Icons.LINK, label="Link"),
+            ft.NavigationBarDestination(icon=ft.Icons.LOCK_OUTLINE, selected_icon=ft.Icons.LOCK, label="Password"),
+            ft.NavigationBarDestination(icon=ft.Icons.STICKY_NOTE_2_OUTLINED, selected_icon=ft.Icons.STICKY_NOTE_2, label="Notes"),
         ],
-        expand=True,
+        on_change=lambda e: on_nav_change(e.control.selected_index)
     )
 
-    page.add(layout)
+    mobile_header = ft.Container(
+        content=ft.Row(
+            [
+                ft.Text("PerDash", size=16, weight=ft.FontWeight.BOLD),
+                theme_btn
+            ],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+        ),
+        padding=ft.Padding(12, 6, 12, 0),
+        visible=False
+    )
 
-ft.run(main)
+    divider = ft.VerticalDivider(width=1)
+    main_layout = ft.Column([], expand=True)
+
+    def on_nav_change(selected_idx):
+        current_idx[0] = selected_idx
+        sidebar.selected_index = selected_idx
+        bottom_nav.selected_index = selected_idx
+        is_mob = current_is_mobile[0] if current_is_mobile[0] is not None else False
+        content_area.content = get_content(selected_idx, is_mob)
+        page.update()
+
+    def update_layout(is_mob):
+        if is_mob:
+            left_sidebar.visible = False
+            divider.visible = False
+            mobile_header.visible = True
+            bottom_nav.visible = True
+            content_area.padding = 6
+            main_layout.controls = [
+                mobile_header,
+                content_area,
+                bottom_nav
+            ]
+        else:
+            left_sidebar.visible = True
+            divider.visible = True
+            mobile_header.visible = False
+            bottom_nav.visible = False
+            content_area.padding = 15
+            main_layout.controls = [
+                ft.Row(
+                    [
+                        left_sidebar,
+                        divider,
+                        content_area,
+                    ],
+                    expand=True,
+                )
+            ]
+
+        content_area.content = get_content(current_idx[0], is_mob)
+        page.update()
+
+    def auto_check_size():
+        while True:
+            try:
+                w = page.width or (page.window.width if page.window else 0)
+                
+                is_mob = w < 650 if w > 0 else False
+
+                if current_is_mobile[0] != is_mob:
+                    current_is_mobile[0] = is_mob
+                    update_layout(is_mob)
+
+            except Exception:
+                pass
+            
+            time.sleep(0.2)
+
+    page.add(main_layout)
+
+    threading.Thread(target=auto_check_size, daemon=True).start()
+
+ft.app(target=main)

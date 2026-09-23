@@ -4,7 +4,6 @@ from database import save_data
 def build_notes(page: ft.Page, app_data: dict):
     notes = app_data.get("notes", [])
 
-    # Menggunakan warna outline tema dinamis
     border_col = ft.Colors.OUTLINE
 
     main_layout = ft.Column(expand=True)
@@ -13,7 +12,7 @@ def build_notes(page: ft.Page, app_data: dict):
         grid = ft.GridView(
             expand=True,
             runs_count=4,            
-            child_aspect_ratio=1.0, 
+            child_aspect_ratio=1.0,
             spacing=12,
             run_spacing=12,
         )
@@ -25,7 +24,6 @@ def build_notes(page: ft.Page, app_data: dict):
                 alignment=ft.Alignment(0, 0)  
             )
         else:
-            # Menggunakan warna variant outline agar border kartu catatan terlihat rapi di kedua mode
             card_border_color = ft.Colors.OUTLINE_VARIANT
 
             for item in notes:
@@ -35,34 +33,44 @@ def build_notes(page: ft.Page, app_data: dict):
                             show_editor_view(note_item)
 
                     content_text = note_item.get("content", "")
-                    is_long_note = len(content_text) > 90
+                    is_long_note = len(content_text) > 150 or content_text.count("\n") > 6
 
-                    card_controls = [
-                        ft.Text(
-                            note_item["title"],
-                            weight=ft.FontWeight.BOLD,
-                            size=15,
-                            overflow=ft.TextOverflow.ELLIPSIS,
-                            max_lines=1
-                        ),
-                        ft.Divider(height=1),
-                        ft.Text(
+                    preview_content = ft.Container(
+                        content=ft.Markdown(
                             content_text,
-                            size=12,
-                            opacity=0.8,
-                            overflow=ft.TextOverflow.ELLIPSIS,
-                            max_lines=4,
-                            expand=True
-                        )
-                    ]
+                            selectable=False,
+                            extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+                        ),
+                        expand=True,
+                        clip_behavior=ft.ClipBehavior.HARD_EDGE
+                    )
+
+                    card_column = ft.Column(
+                        controls=[
+                            ft.Column([
+                                ft.Text(
+                                    note_item["title"],
+                                    weight=ft.FontWeight.BOLD,
+                                    size=15,
+                                    overflow=ft.TextOverflow.ELLIPSIS,
+                                    max_lines=1
+                                ),
+                                ft.Divider(height=1),
+                            ], spacing=4),
+                            preview_content,
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        expand=True,
+                        spacing=6
+                    )
 
                     if is_long_note:
-                        card_controls.append(
+                        card_column.controls.append(
                             ft.Text("Read more...", color="amber400", size=11, italic=True)
                         )
 
                     return ft.Container(
-                        content=ft.Column(card_controls, spacing=6, expand=True),
+                        content=card_column,
                         padding=14,
                         border_radius=12,
                         bgcolor="surfaceVariant",
@@ -122,7 +130,6 @@ def build_notes(page: ft.Page, app_data: dict):
                     "title": title_field.value.strip(),
                     "content": content_field.value.strip()
                 }
-                # Menggunakan insert(0, ...) agar catatan baru berada di posisi paling atas
                 notes.insert(0, new_note)
 
             app_data["notes"] = notes
