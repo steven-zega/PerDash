@@ -8,4 +8,4 @@ copyright = "Copyright (C) 2026"
 path = "."
 
 [tool.flet.android]
-icon = "PerDash.png"
+icon = "assets/PerDash.png"

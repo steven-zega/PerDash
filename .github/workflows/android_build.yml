@@ -33,7 +33,7 @@ jobs:
 
       - name: Build APK (Auto Approve)
         run: |
-          echo "y" | flet build apk --icon PerDash.png
+          echo "y" | flet build apk
 
       - name: Upload APK Release
         uses: softprops/action-gh-release@v1
