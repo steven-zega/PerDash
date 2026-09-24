@@ -5,13 +5,19 @@ import platform
 def get_data_path():
     app_name = "Personal Dashboard"
     
-    if "ANDROID_ARGUMENT" in os.environ or "ANDROID_PRIVATE" in os.environ or "PYTHONHOME" in os.environ:
-        base_dir = os.environ.get("ANDROID_PRIVATE", os.path.expanduser("~"))
+    # Deteksi lingkungan Android / Serious Python
+    if "SERIOUS_PYTHON_APP_DATA_DIR" in os.environ:
+        base_dir = os.environ["SERIOUS_PYTHON_APP_DATA_DIR"]
+    elif "ANDROID_PRIVATE" in os.environ:
+        base_dir = os.environ["ANDROID_PRIVATE"]
+    elif "PYTHONHOME" in os.environ and "/tmp/serious_python" in os.environ.get("PYTHONHOME", ""):
+        # Fallback direktori privat internal Android
+        base_dir = os.path.dirname(os.environ.get("PYTHONHOME"))
     elif platform.system() == "Windows":
         base_dir = os.getenv("APPDATA", os.path.expanduser("~"))
     elif platform.system() == "Darwin":  # macOS
         base_dir = os.path.expanduser("~/Library/Application Support")
-    else:  # Linux Desktop
+    else:  # Linux
         base_dir = os.path.expanduser("~/.config")
         
     app_dir = os.path.join(base_dir, app_name)
