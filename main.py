@@ -1,30 +1,35 @@
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.3"
 
 import flet as ft
 import threading
 import time
+import os
+import platform
 from database import load_data, save_data
 
-# Modul Desktop
 from modules.todo import build_todo
 from modules.links import build_links
 from modules.vault import build_vault
 from modules.notes import build_notes
 
-# Modul Mobile
 from modules.mobile.todo_mobile import build_todo_mobile
 from modules.mobile.links_mobile import build_links_mobile
 from modules.mobile.vault_mobile import build_vault_mobile
 from modules.mobile.notes_mobile import build_notes_mobile
 
 def main(page: ft.Page):
+    page.assets_dir = "assets"
+    
     page.title = "PerDash"
     page.padding = 0
     page.window.width = 1000
     page.window.height = 650
 
     try:
-        page.window.icon = r"C:\Users\Steven Zega\Pyhton\PerDash.ico"
+        if platform.system() == "Windows":
+            icon_path = os.path.join(os.path.dirname(__file__), "PerDash.ico")
+            if os.path.exists(icon_path):
+                page.window.icon = icon_path
     except Exception:
         pass
 
@@ -102,7 +107,7 @@ def main(page: ft.Page):
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         ),
-        width=85,  # Sidebar diperlebar
+        width=85,
         padding=ft.Padding(0, 15, 0, 0)
     )
 

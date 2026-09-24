@@ -1,30 +1,28 @@
 import json
 import os
 import platform
+import tempfile
 
 def get_data_path():
     app_name = "Personal Dashboard"
     
-    # Deteksi lingkungan Android / Serious Python
-    if "SERIOUS_PYTHON_APP_DATA_DIR" in os.environ:
-        base_dir = os.environ["SERIOUS_PYTHON_APP_DATA_DIR"]
-    elif "ANDROID_PRIVATE" in os.environ:
-        base_dir = os.environ["ANDROID_PRIVATE"]
-    elif "PYTHONHOME" in os.environ and "/tmp/serious_python" in os.environ.get("PYTHONHOME", ""):
-        # Fallback direktori privat internal Android
-        base_dir = os.path.dirname(os.environ.get("PYTHONHOME"))
-    elif platform.system() == "Windows":
+    if platform.system() == "Windows":
         base_dir = os.getenv("APPDATA", os.path.expanduser("~"))
-    elif platform.system() == "Darwin":  # macOS
+    elif platform.system() == "Darwin":
         base_dir = os.path.expanduser("~/Library/Application Support")
-    else:  # Linux
-        base_dir = os.path.expanduser("~/.config")
-        
+    elif "ANDROID_ARGUMENT" in os.environ or "PYTHONHOME" in os.environ or "ANDROID_PRIVATE" in os.environ:
+        base_dir = os.environ.get("ANDROID_PRIVATE", tempfile.gettempdir())
+    else:
+        try:
+            base_dir = os.path.expanduser("~/.config")
+            test_dir = os.path.join(base_dir, app_name)
+            os.makedirs(test_dir, exist_ok=True)
+            return os.path.join(test_dir, "data.json")
+        except PermissionError:
+            base_dir = tempfile.gettempdir()
+
     app_dir = os.path.join(base_dir, app_name)
-    
-    if not os.path.exists(app_dir):
-        os.makedirs(app_dir, exist_ok=True)
-        
+    os.makedirs(app_dir, exist_ok=True)
     return os.path.join(app_dir, "data.json")
 
 DATA_FILE = get_data_path()
